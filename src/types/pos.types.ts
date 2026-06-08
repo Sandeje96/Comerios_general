@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+// pos.types.ts — Tipos del módulo de Punto de Venta
 
 // ─────────────────────────────────────────────
 // CARRITO (estado en memoria del cliente)
