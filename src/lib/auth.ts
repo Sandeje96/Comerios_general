@@ -1,3 +1,4 @@
+process.env.AUTH_TRUST_HOST = "true";
 import NextAuth, { DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
