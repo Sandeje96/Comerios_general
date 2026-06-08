@@ -29,11 +29,9 @@ export default async function DashboardPage() {
             <p className="text-sm font-medium text-slate-900">{session?.user?.name ?? "Usuario"}</p>
             <p className="text-xs text-slate-500">{session?.user?.email}</p>
           </div>
-          <form action={logoutAction}>
-            <Button variant="outline" size="sm" type="submit">
-              Cerrar sesión
-            </Button>
-          </form>
+          <a href="/api/auth/signout" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
+            Cerrar sesión
+          </a>
         </div>
       </header>
 
