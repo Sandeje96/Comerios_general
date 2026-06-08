@@ -60,7 +60,12 @@ export default async function ProductosPage() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <DeleteProductoButton id={prod.id} />
+                  <div className="flex items-center justify-end gap-2">
+                    <Link href={`/productos/${prod.id}/editar`}>
+                      <Button variant="outline" size="sm">Editar</Button>
+                    </Link>
+                    <DeleteProductoButton id={prod.id} />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
