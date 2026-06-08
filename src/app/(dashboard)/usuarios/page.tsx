@@ -29,9 +29,12 @@ export default async function UsuariosPage() {
           <h1 className="text-2xl font-bold text-slate-900">Usuarios</h1>
           <p className="text-sm text-slate-500">Gestiona los accesos de tus empleados</p>
         </div>
-        <Button asChild>
-          <Link href="/usuarios/nuevo">Nuevo Usuario</Link>
-        </Button>
+        <Link 
+          href="/usuarios/nuevo"
+          className="bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          Nuevo Usuario
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">

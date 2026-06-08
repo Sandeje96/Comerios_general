@@ -27,9 +27,12 @@ export default async function ProductosPage() {
           <h1 className="text-2xl font-bold text-slate-900">Catálogo de Productos</h1>
           <p className="text-sm text-slate-500">Administra tus productos y precios</p>
         </div>
-        <Button asChild>
-          <Link href="/productos/nuevo">Nuevo Producto</Link>
-        </Button>
+        <Link 
+          href="/productos/nuevo"
+          className="bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          Nuevo Producto
+        </Link>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
