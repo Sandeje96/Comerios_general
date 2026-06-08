@@ -5,7 +5,8 @@ export const usuarioCreateSchema = z.object({
   email: z.string().email("Debe ser un correo electrónico válido").trim().toLowerCase(),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
   rol: z.enum(["CAJERO", "ADMIN"], {
-    errorMap: () => ({ message: "Rol inválido" }),
+    invalid_type_error: "Rol inválido",
+    required_error: "El rol es obligatorio",
   }),
 });
 
