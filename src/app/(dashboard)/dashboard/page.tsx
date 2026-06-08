@@ -1,19 +1,83 @@
 import { auth } from "@/lib/auth";
 import { logoutAction } from "@/actions/auth.actions";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard | Gestión Comercial",
+};
 
 export default async function DashboardPage() {
   const session = await auth();
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
-      <p className="mb-4">Bienvenido, {session?.user?.name}</p>
-      <p className="mb-4 text-sm text-gray-500">ID Comercio: {session?.user?.comercioId}</p>
+    <div className="min-h-screen bg-slate-50 p-6">
+      {/* Header */}
+      <header className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
+            G
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 leading-tight">Gestión Comercial</h1>
+            <p className="text-xs text-slate-500">Panel de administración</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-medium text-slate-900">{session?.user?.name ?? "Usuario"}</p>
+            <p className="text-xs text-slate-500">{session?.user?.email}</p>
+          </div>
+          <form action={logoutAction}>
+            <Button variant="outline" size="sm" type="submit">
+              Cerrar sesión
+            </Button>
+          </form>
+        </div>
+      </header>
 
-      <form action={logoutAction}>
-        <Button variant="destructive" type="submit">Cerrar Sesión</Button>
-      </form>
+      {/* Bienvenida */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-slate-900">
+          ¡Bienvenido de vuelta!
+        </h2>
+        <p className="text-slate-500 text-sm mt-1">
+          Tu sistema está listo. Pronto podrás gestionar productos, stock y ventas desde aquí.
+        </p>
+      </div>
+
+      {/* Cards de estado */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {[
+          { label: "Ventas hoy", value: "—", desc: "Próximamente" },
+          { label: "Ventas del mes", value: "—", desc: "Próximamente" },
+          { label: "Productos", value: "—", desc: "Próximamente" },
+          { label: "Stock bajo", value: "—", desc: "Próximamente" },
+        ].map((item) => (
+          <Card key={item.label}>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs">{item.label}</CardDescription>
+              <CardTitle className="text-3xl font-bold text-slate-400">{item.value}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-slate-400">{item.desc}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Info de sesión (temporal para testing) */}
+      <Card className="border-dashed border-slate-300 bg-slate-100/50">
+        <CardHeader>
+          <CardTitle className="text-sm text-slate-600">Información de sesión activa</CardTitle>
+        </CardHeader>
+        <CardContent className="text-xs text-slate-500 space-y-1 font-mono">
+          <p><span className="font-semibold">Usuario ID:</span> {session?.user?.id}</p>
+          <p><span className="font-semibold">Comercio ID:</span> {session?.user?.comercioId}</p>
+          <p><span className="font-semibold">Rol:</span> {session?.user?.rol}</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
