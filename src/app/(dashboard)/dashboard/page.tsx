@@ -12,29 +12,7 @@ export default async function DashboardPage() {
   const session = await auth();
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      {/* Header */}
-      <header className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm">
-            G
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 leading-tight">Gestión Comercial</h1>
-            <p className="text-xs text-slate-500">Panel de administración</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-slate-900">{session?.user?.name ?? "Usuario"}</p>
-            <p className="text-xs text-slate-500">{session?.user?.email}</p>
-          </div>
-          <a href="/api/auth/signout" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3">
-            Cerrar sesión
-          </a>
-        </div>
-      </header>
-
+    <div className="p-6">
       {/* Bienvenida */}
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-slate-900">
