@@ -1,0 +1,214 @@
+TASKS.md
+Roadmap de Desarrollo
+MVP V1
+
+Objetivo:
+
+Tener una versión funcional lista para usar por comercios reales.
+
+Fase 1 - Infraestructura
+Completar
+
+Crear proyecto Next.js 15
+
+Configurar TypeScript
+
+Configurar Tailwind
+
+Configurar Shadcn UI
+
+Configurar PostgreSQL
+
+Configurar Prisma
+
+Configurar Railway
+
+Configurar variables de entorno
+
+Configurar GitHub
+
+Estado:
+PENDIENTE
+
+Fase 2 - Autenticación
+Completar
+
+Modelo Comercio
+
+Registro de comercio
+
+Login
+
+Logout
+
+Hash de contraseñas
+
+Middleware de protección
+
+Gestión de sesión
+
+Estado:
+PENDIENTE
+
+Fase 3 - Dashboard
+Completar
+
+Layout privado
+
+Sidebar
+
+Header
+
+Dashboard principal
+
+Indicadores iniciales
+
+Estado:
+PENDIENTE
+
+Fase 4 - Productos
+Completar
+
+Crear producto
+
+Editar producto
+
+Eliminar producto
+
+Listar productos
+
+Buscar productos
+
+Paginación
+
+Validaciones
+
+Estado:
+PENDIENTE
+
+Fase 5 - Stock
+Completar
+
+Stock inicial
+
+Ajustes manuales
+
+Movimientos de stock
+
+Historial
+
+Alertas de stock bajo
+
+Estado:
+PENDIENTE
+
+Fase 6 - Ventas
+Completar
+
+Carrito
+
+Búsqueda de productos
+
+Validación de stock
+
+Confirmación de venta
+
+Registro de venta
+
+Descuento automático de stock
+
+Historial de ventas
+
+Estado:
+PENDIENTE
+
+Fase 7 - Comprobantes
+Completar
+
+Generar comprobante
+
+Vista previa
+
+Impresión térmica
+
+Numeración automática
+
+Estado:
+PENDIENTE
+
+Fase 8 - Reportes
+Completar
+
+Ventas diarias
+
+Ventas mensuales
+
+Productos más vendidos
+
+Stock bajo
+
+Estado:
+PENDIENTE
+
+Fase 9 - Producción
+Completar
+
+Auditoría de seguridad
+
+Optimización consultas
+
+Índices PostgreSQL
+
+Backup
+
+Monitoreo
+
+Deploy Railway
+
+Estado:
+PENDIENTE
+
+Backlog Futuro
+V2
+
+Clientes
+
+Cuenta corriente
+
+Caja diaria
+
+Compras a proveedores
+
+Categorías
+
+V3
+
+Facturación AFIP
+
+WhatsApp
+
+Reportes PDF
+
+Multi sucursal
+
+V4
+
+Aplicación móvil
+
+Escáner de código de barras
+
+Integración Mercado Pago
+
+Integración e-commerce
+
+Regla de Desarrollo
+
+Antes de comenzar una nueva tarea:
+
+Revisar CLAUDE.md
+Revisar PROJECT_CONTEXT.md
+Verificar dependencias existentes
+Mantener compatibilidad con PostgreSQL
+Mantener compatibilidad con Railway
+
+No avanzar a la siguiente fase hasta completar la actual.

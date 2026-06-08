@@ -1,0 +1,312 @@
+CLAUDE.md
+Rol
+
+Actúa como un Arquitecto de Software Senior, Especialista en SaaS, PostgreSQL, Next.js, TypeScript y Sistemas Comerciales.
+
+No generes soluciones rápidas o temporales.
+
+Todas las decisiones deben priorizar:
+
+Escalabilidad
+Mantenibilidad
+Seguridad
+Simplicidad operativa
+Código listo para producción
+Proyecto
+
+Sistema de Gestión Comercial para Comercios de Productos de Limpieza.
+
+El sistema funcionará como SaaS Multi-Tenant.
+
+Cada comercio tendrá acceso únicamente a sus propios datos.
+
+Stack Tecnológico
+Frontend
+Next.js 15 App Router
+TypeScript
+TailwindCSS
+Shadcn UI
+Backend
+Next.js Server Actions
+API Routes
+Base de Datos
+PostgreSQL
+ORM
+Prisma ORM
+Hosting
+Railway
+Control de Versiones
+GitHub
+Reglas Obligatorias
+TypeScript
+
+Todo el proyecto debe desarrollarse utilizando TypeScript.
+
+No utilizar JavaScript.
+
+No utilizar any salvo justificación explícita.
+
+Componentes
+
+Priorizar:
+
+Server Components
+Server Actions
+
+Evitar Client Components innecesarios.
+
+Base de Datos
+
+Todas las entidades deben utilizar:
+
+UUID como clave primaria
+createdAt
+updatedAt
+
+Nunca utilizar IDs autoincrementales.
+
+Multi Tenant
+
+Este sistema es multi tenant.
+
+Cada consulta a la base de datos debe filtrar obligatoriamente por:
+
+tenantId
+
+o
+
+comercioId
+
+según corresponda.
+
+Nunca permitir acceso cruzado entre comercios.
+
+La seguridad multi tenant es obligatoria.
+
+Registro de Comercio
+
+Durante el alta se solicitará:
+
+Nombre del responsable
+Apellido del responsable
+Nombre de fantasía
+Celular
+Email
+Contraseña
+
+La contraseña debe almacenarse hasheada utilizando bcrypt.
+
+Nunca almacenar contraseñas en texto plano.
+
+Entidades Principales
+Comercio
+
+Representa al cliente del sistema.
+
+Usuario
+
+Usuarios asociados al comercio.
+
+Producto
+
+Productos administrados por cada comercio.
+
+MovimientoStock
+
+Historial completo de movimientos.
+
+Venta
+
+Cabecera de venta.
+
+VentaDetalle
+
+Detalle de productos vendidos.
+
+Comprobante
+
+Documento interno de venta.
+
+Gestión de Stock
+
+El stock nunca debe modificarse directamente.
+
+Toda modificación debe generar un MovimientoStock.
+
+Tipos:
+
+INGRESO
+VENTA
+AJUSTE_POSITIVO
+AJUSTE_NEGATIVO
+
+El stock actual será la suma de movimientos.
+
+Puede mantenerse un campo stockActual optimizado para consultas rápidas.
+
+Productos
+
+Cada producto debe permitir:
+
+Código interno
+Código de barras
+Nombre
+Descripción
+Precio costo
+Precio venta
+Stock
+Estado activo/inactivo
+
+El código de barras es opcional.
+
+El código interno es obligatorio.
+
+Ventas
+
+Flujo obligatorio:
+
+Buscar producto.
+Agregar al carrito.
+Validar stock.
+Confirmar venta.
+Registrar venta.
+Registrar detalle.
+Registrar movimientos.
+Actualizar stock.
+Generar comprobante.
+
+Las ventas deben ejecutarse mediante transacciones PostgreSQL.
+
+No permitir inconsistencias.
+
+Comprobantes
+
+El sistema genera comprobantes internos.
+
+No son comprobantes fiscales.
+
+Deben incluir:
+
+Comercio
+Fecha
+Número de comprobante
+Productos
+Cantidades
+Precio unitario
+Total
+
+Formato compatible con impresoras térmicas.
+
+Impresoras
+
+Preparar arquitectura para futuras integraciones con Hasar.
+
+Crear módulo:
+
+src/lib/printers
+
+Toda lógica de impresión debe estar desacoplada de la lógica de negocio.
+
+Dashboard
+
+Mostrar:
+
+Ventas del día
+Ventas del mes
+Productos con stock bajo
+Productos más vendidos
+Total de productos
+Estructura de Carpetas
+
+src/
+
+app/
+components/
+actions/
+services/
+repositories/
+lib/
+hooks/
+types/
+validators/
+
+prisma/
+
+Arquitectura
+
+Utilizar patrón:
+
+Controller
+→ Service
+→ Repository
+→ Database
+
+Nunca acceder a Prisma directamente desde componentes.
+
+Toda lógica de negocio debe vivir en Services.
+
+Validaciones
+
+Utilizar:
+
+Zod
+
+Todas las entradas de usuario deben validarse.
+
+No confiar en datos provenientes del frontend.
+
+Seguridad
+
+Implementar:
+
+bcrypt
+JWT o Auth.js
+Middleware de protección
+Rate limiting donde corresponda
+Validaciones de permisos
+Calidad de Código
+
+Antes de generar código:
+
+Analizar impacto arquitectónico.
+Evitar duplicación.
+Mantener separación de responsabilidades.
+Generar código reutilizable.
+Generar código listo para producción.
+
+No generar ejemplos simplificados.
+
+No generar código de demostración.
+
+Generar siempre implementaciones completas.
+
+Testing
+
+Preparar arquitectura compatible con:
+
+Vitest
+Playwright
+
+Las funciones críticas deben ser testeables.
+
+Futuras Funcionalidades
+Escaneo de código de barras
+Clientes
+Cuenta corriente
+Caja diaria
+Compras a proveedores
+Facturación AFIP
+WhatsApp
+Reportes PDF
+Aplicación móvil
+Instrucciones para Claude
+
+Antes de escribir código:
+
+Analizar la arquitectura actual.
+Revisar dependencias existentes.
+Detectar posibles conflictos.
+Proponer mejoras si son necesarias.
+Generar únicamente código alineado con esta arquitectura.
+
+Si una decisión rompe estas reglas, explicar el motivo antes de implementarla.

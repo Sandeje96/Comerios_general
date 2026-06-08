@@ -1,0 +1,161 @@
+PROJECT_CONTEXT.md
+Contexto del Proyecto
+
+Este proyecto consiste en una plataforma SaaS para gestión comercial orientada inicialmente a comercios de productos de limpieza.
+
+El sistema debe ser simple de usar, rápido y preparado para crecer hacia otros rubros comerciales.
+
+Objetivo Principal
+
+Permitir que cada comercio:
+
+Administre sus productos.
+Controle su stock.
+Registre ventas.
+Imprima comprobantes internos.
+Consulte reportes básicos.
+Tenga acceso únicamente a sus propios datos.
+Tipo de Cliente
+
+Comercios pequeños y medianos dedicados a:
+
+Productos de limpieza
+Artículos de higiene
+Perfumería básica
+Venta minorista
+
+Los usuarios suelen tener conocimientos técnicos limitados.
+
+La interfaz debe ser extremadamente simple.
+
+Modelo SaaS
+
+Cada comercio tendrá una cuenta independiente.
+
+Cada comercio podrá registrarse desde la plataforma.
+
+Toda la información debe quedar aislada por comercio.
+
+Un comercio jamás debe visualizar datos de otro comercio.
+
+Registro Inicial
+
+Al registrarse se solicitará:
+
+Nombre del responsable
+Apellido del responsable
+Nombre de fantasía
+Celular
+Email
+Contraseña
+
+Luego del registro el comercio podrá acceder a su panel privado.
+
+Gestión de Productos
+
+Cada comercio podrá cargar:
+
+Nombre
+Descripción
+Código interno
+Código de barras
+Precio costo
+Precio venta
+Stock inicial
+
+El código de barras será opcional.
+
+El código interno será obligatorio.
+
+Gestión de Stock
+
+El sistema debe controlar stock automáticamente.
+
+Cuando se realiza una venta:
+
+Se descuenta stock.
+Se registra movimiento.
+Se guarda historial.
+
+No se debe permitir stock negativo.
+
+Ventas
+
+Proceso de venta:
+
+Buscar producto.
+Seleccionar cantidad.
+Agregar al carrito.
+Confirmar venta.
+Descontar stock.
+Generar comprobante.
+
+El proceso debe ser rápido para atención en mostrador.
+
+Comprobantes
+
+Los comprobantes generados son internos.
+
+No tienen validez fiscal.
+
+Su finalidad es entregar al cliente un resumen de compra.
+
+Deben incluir:
+
+Nombre del comercio
+Fecha
+Número de operación
+Productos
+Cantidades
+Total
+Impresión
+
+El sistema deberá prepararse para futuras integraciones con impresoras térmicas Hasar.
+
+La lógica de impresión debe mantenerse desacoplada de la lógica comercial.
+
+Dashboard
+
+El comercio debe visualizar:
+
+Ventas del día
+Ventas del mes
+Productos con stock bajo
+Total de productos
+Productos más vendidos
+Escalabilidad
+
+El sistema debe diseñarse para incorporar en futuras versiones:
+
+Clientes
+Cuenta corriente
+Caja diaria
+Compras a proveedores
+Facturación electrónica AFIP
+WhatsApp
+Reportes PDF
+Multi sucursal
+Aplicación móvil
+Prioridades del Negocio
+
+Prioridad máxima:
+
+Registro de comercios
+Login
+Productos
+Stock
+Ventas
+Comprobantes
+
+Todo lo demás es secundario.
+
+Filosofía del Producto
+
+El sistema debe ser:
+
+Simple
+Rápido
+Confiable
+Fácil de aprender
+
+Se prioriza productividad por encima de funciones complejas.
