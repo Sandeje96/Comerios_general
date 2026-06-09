@@ -33,7 +33,7 @@ export async function updateProductoAction(id: string, data: ProductoUpdateInput
     const session = await getSessionOrThrow();
     const validated = productoUpdateSchema.parse(data);
     
-    await modificarProducto(session.user.comercioId, id, validated);
+    await modificarProducto(session.user.comercioId, id, validated, session.user.id);
     
     revalidatePath("/productos");
     return { success: true };

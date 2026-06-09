@@ -14,6 +14,7 @@ type ProductoData = {
   descripcion: string | null;
   precioCosto: number;
   precioVenta: number;
+  stockActual: number;
 };
 
 export function EditProductoForm({ producto }: { producto: ProductoData }) {
@@ -33,6 +34,7 @@ export function EditProductoForm({ producto }: { producto: ProductoData }) {
       descripcion: (formData.get("descripcion") as string) || "",
       precioCosto: Number(formData.get("precioCosto")),
       precioVenta: Number(formData.get("precioVenta")),
+      stockActual: Number(formData.get("stockActual")),
     };
 
     startTransition(async () => {
@@ -69,6 +71,11 @@ export function EditProductoForm({ producto }: { producto: ProductoData }) {
           <div className="space-y-2">
             <label className="text-sm font-medium">Código de Barras</label>
             <Input name="codigoBarras" defaultValue={producto.codigoBarras || ""} placeholder="Opcional" className="font-mono" />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Stock Actual *</label>
+            <Input name="stockActual" type="number" min={0} required defaultValue={producto.stockActual} />
           </div>
 
           <div className="space-y-2">

@@ -29,6 +29,7 @@ export default async function EditarProductoPage({
     descripcion: producto.descripcion,
     precioCosto: Number(producto.precioCosto),
     precioVenta: Number(producto.precioVenta),
+    stockActual: producto.stockActual,
   };
 
   return (

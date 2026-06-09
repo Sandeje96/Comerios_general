@@ -17,6 +17,7 @@ export const productoUpdateSchema = z.object({
   descripcion: z.string().max(255).optional().or(z.literal('')),
   precioCosto: z.coerce.number().min(0, "El costo no puede ser negativo"),
   precioVenta: z.coerce.number().min(0, "El precio de venta no puede ser negativo"),
+  stockActual: z.coerce.number().int().min(0, "El stock no puede ser negativo"),
 });
 
 export type ProductoCreateInput = z.infer<typeof productoCreateSchema>;

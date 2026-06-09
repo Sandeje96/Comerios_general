@@ -100,6 +100,50 @@ export async function updateProducto(
   });
 }
 
+export async function updateProductoWithStock(
+  comercioId: string,
+  id: string,
+  data: Prisma.ProductoUncheckedUpdateInput,
+  nuevoStock: number,
+  usuarioId: string
+) {
+  return prisma.$transaction(async (tx) => {
+    const productoAnterior = await tx.producto.findUnique({
+      where: { id, comercioId },
+      select: { stockActual: true },
+    });
+
+    if (!productoAnterior) {
+      throw new Error("Producto no encontrado");
+    }
+
+    const producto = await tx.producto.update({
+      where: { id, comercioId },
+      data: {
+        ...data,
+        stockActual: nuevoStock,
+      },
+    });
+
+    const diferencia = nuevoStock - productoAnterior.stockActual;
+
+    if (diferencia !== 0) {
+      await tx.movimientoStock.create({
+        data: {
+          comercioId: producto.comercioId,
+          productoId: producto.id,
+          usuarioId,
+          tipo: diferencia > 0 ? "AJUSTE_POSITIVO" : "AJUSTE_NEGATIVO",
+          cantidad: Math.abs(diferencia),
+          observaciones: "Ajuste manual de stock desde edición de producto",
+        },
+      });
+    }
+
+    return producto;
+  });
+}
+
 export async function deleteProductoSoft(comercioId: string, id: string) {
   return prisma.producto.update({
     where: { id, comercioId },

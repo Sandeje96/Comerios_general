@@ -1,4 +1,4 @@
-import { findProductoByCodigo, createProductoWithStock, updateProducto, reactivateProductoWithStock } from "../repositories/producto-crud.repository";
+import { findProductoByCodigo, createProductoWithStock, updateProducto, reactivateProductoWithStock, updateProductoWithStock } from "../repositories/producto-crud.repository";
 import { ProductoCreateInput, ProductoUpdateInput } from "../validators/producto.schema";
 
 export async function registrarNuevoProducto(
@@ -47,7 +47,8 @@ export async function registrarNuevoProducto(
 export async function modificarProducto(
   comercioId: string,
   id: string,
-  data: ProductoUpdateInput
+  data: ProductoUpdateInput,
+  usuarioId: string
 ) {
   // Si cambia el código, verificar que no choque con otro
   const existe = await findProductoByCodigo(comercioId, data.codigoInterno);
@@ -59,12 +60,18 @@ export async function modificarProducto(
     }
   }
 
-  return updateProducto(comercioId, id, {
-    codigoInterno: data.codigoInterno,
-    codigoBarras: data.codigoBarras || null,
-    nombre: data.nombre,
-    descripcion: data.descripcion || null,
-    precioCosto: data.precioCosto,
-    precioVenta: data.precioVenta,
-  });
+  return updateProductoWithStock(
+    comercioId,
+    id,
+    {
+      codigoInterno: data.codigoInterno,
+      codigoBarras: data.codigoBarras || null,
+      nombre: data.nombre,
+      descripcion: data.descripcion || null,
+      precioCosto: data.precioCosto,
+      precioVenta: data.precioVenta,
+    },
+    data.stockActual,
+    usuarioId
+  );
 }
