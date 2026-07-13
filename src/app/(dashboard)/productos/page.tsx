@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { DeleteProductoButton } from "@/components/productos/delete-button";
 import Link from "next/link";
 
+import { ExportPdfButton } from "@/components/productos/export-pdf-button";
+
 function formatCurrency(value: number | any): string {
   return new Intl.NumberFormat("es-AR", {
     style: "currency",
@@ -20,6 +22,13 @@ export default async function ProductosPage() {
 
   const productos = await getProductosByComercio(session.user.comercioId);
 
+  // Mapear solo los datos necesarios para el PDF para evitar pasar objetos enormes al cliente
+  const productosParaPdf = productos.map(p => ({
+    codigoInterno: p.codigoInterno,
+    nombre: p.nombre,
+    stockActual: p.stockActual
+  }));
+
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -27,12 +36,15 @@ export default async function ProductosPage() {
           <h1 className="text-2xl font-bold text-slate-900">Catálogo de Productos</h1>
           <p className="text-sm text-slate-500">Administra tus productos y precios</p>
         </div>
-        <Link 
-          href="/productos/nuevo"
-          className="bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-        >
-          Nuevo Producto
-        </Link>
+        <div className="flex items-center gap-3">
+          <ExportPdfButton productos={productosParaPdf} />
+          <Link 
+            href="/productos/nuevo"
+            className="bg-slate-900 text-white hover:bg-slate-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+          >
+            Nuevo Producto
+          </Link>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
