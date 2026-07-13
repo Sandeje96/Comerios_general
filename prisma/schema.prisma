@@ -59,7 +59,7 @@ model Producto {
   codigoBarras     String?
   nombre           String
   descripcion      String?
-  precioCosto      Decimal   @db.Decimal(10, 2)
+  precioCosto      Decimal?  @db.Decimal(10, 2)
   precioVenta      Decimal   @db.Decimal(10, 2)
   stockActual      Int       @default(0)
   activo           Boolean   @default(true) 
@@ -131,7 +131,7 @@ model VentaDetalle {
   producto         Producto  @relation(fields: [productoId], references: [id])
   cantidad         Int
   precioUnitario   Decimal   @db.Decimal(10, 2) 
-  precioCosto      Decimal   @db.Decimal(10, 2) 
+  precioCosto      Decimal?  @db.Decimal(10, 2) 
   subtotal         Decimal   @db.Decimal(12, 2)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

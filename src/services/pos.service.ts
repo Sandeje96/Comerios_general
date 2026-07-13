@@ -88,7 +88,7 @@ export async function procesarVenta(
         productoId: item.productoId,
         cantidad: item.cantidad,
         precioUnitario,
-        precioCosto: Number(producto.precioCosto),
+        precioCosto: producto.precioCosto ? Number(producto.precioCosto) : null,
         subtotal: precioUnitario * item.cantidad,
       };
     });

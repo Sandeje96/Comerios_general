@@ -21,7 +21,7 @@ export default function NuevoProductoPage() {
       codigoBarras: (formData.get("codigoBarras") as string) || "",
       nombre: formData.get("nombre") as string,
       descripcion: (formData.get("descripcion") as string) || "",
-      precioCosto: Number(formData.get("precioCosto")),
+      precioCosto: formData.get("precioCosto") ? Number(formData.get("precioCosto")) : null,
       precioVenta: Number(formData.get("precioVenta")),
       stockInicial: Number(formData.get("stockInicial")),
     };
@@ -78,8 +78,8 @@ export default function NuevoProductoPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Precio de Costo ($) *</label>
-              <Input name="precioCosto" type="number" step="0.01" min={0} required placeholder="0.00" />
+              <label className="text-sm font-medium">Precio de Costo ($)</label>
+              <Input name="precioCosto" type="number" step="0.01" min={0} placeholder="0.00" />
             </div>
 
             <div className="space-y-2">

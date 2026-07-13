@@ -27,7 +27,7 @@ export default async function EditarProductoPage({
     codigoBarras: producto.codigoBarras,
     nombre: producto.nombre,
     descripcion: producto.descripcion,
-    precioCosto: Number(producto.precioCosto),
+    precioCosto: producto.precioCosto ? Number(producto.precioCosto) : null,
     precioVenta: Number(producto.precioVenta),
     stockActual: producto.stockActual,
   };

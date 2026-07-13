@@ -40,7 +40,7 @@ export async function searchProductos(
     nombre: p.nombre,
     descripcion: p.descripcion,
     precioVenta: Number(p.precioVenta),
-    precioCosto: Number(p.precioCosto),
+    precioCosto: p.precioCosto ? Number(p.precioCosto) : null,
     stockActual: p.stockActual,
   }));
 }
@@ -75,7 +75,7 @@ export async function getProductoById(
     nombre: producto.nombre,
     descripcion: producto.descripcion,
     precioVenta: Number(producto.precioVenta),
-    precioCosto: Number(producto.precioCosto),
+    precioCosto: producto.precioCosto ? Number(producto.precioCosto) : null,
     stockActual: producto.stockActual,
   };
 }

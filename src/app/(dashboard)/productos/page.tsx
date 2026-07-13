@@ -52,7 +52,7 @@ export default async function ProductosPage() {
               <TableRow key={prod.id}>
                 <TableCell className="font-mono text-xs">{prod.codigoInterno}</TableCell>
                 <TableCell className="font-medium">{prod.nombre}</TableCell>
-                <TableCell>{formatCurrency(prod.precioCosto)}</TableCell>
+                <TableCell>{prod.precioCosto != null ? formatCurrency(prod.precioCosto) : "-"}</TableCell>
                 <TableCell className="font-semibold">{formatCurrency(prod.precioVenta)}</TableCell>
                 <TableCell>
                   <Badge variant={prod.stockActual <= 5 ? "destructive" : "secondary"}>

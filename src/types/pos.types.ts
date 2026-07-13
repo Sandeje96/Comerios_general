@@ -9,7 +9,7 @@ export interface CartItem {
   codigoInterno: string;
   nombre: string;
   precioVenta: number;
-  precioCosto: number;
+  precioCosto: number | null;
   cantidad: number;
   subtotal: number;
   stockActual: number; // Para validación client-side
@@ -26,7 +26,7 @@ export interface ProductoSearchResult {
   nombre: string;
   descripcion: string | null;
   precioVenta: number;
-  precioCosto: number;
+  precioCosto: number | null;
   stockActual: number;
 }
 
