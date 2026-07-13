@@ -76,7 +76,7 @@ interface CreateVentaDetalleItem {
   productoId: string;
   cantidad: number;
   precioUnitario: number;
-  precioCosto: number;
+  precioCosto: number | null;
   subtotal: number;
 }
 
