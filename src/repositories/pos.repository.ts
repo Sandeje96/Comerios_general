@@ -73,7 +73,8 @@ export async function createVenta(
 interface CreateVentaDetalleItem {
   comercioId: string;
   ventaId: string;
-  productoId: string;
+  productoId?: string | null;  // null para ítems libres
+  nombreLibre?: string | null; // descripción para ítems libres
   cantidad: number;
   precioUnitario: number;
   precioCosto: number | null;

@@ -4,6 +4,7 @@ import { CartItem, ProductoSearchResult } from "@/types/pos.types";
 interface CartStore {
   items: CartItem[];
   addItem: (producto: ProductoSearchResult) => void;
+  addItemLibre: (nombre: string, precio: number) => void;
   removeItem: (productoId: string) => void;
   updateCantidad: (productoId: string, cantidad: number) => void;
   clearCart: () => void;
@@ -46,8 +47,28 @@ export const useCart = create<CartStore>((set, get) => ({
         cantidad: 1,
         subtotal: producto.precioVenta,
         stockActual: producto.stockActual,
+        esLibre: false,
       };
 
+      return { items: [...state.items, newItem] };
+    });
+  },
+
+  addItemLibre: (nombre: string, precio: number) => {
+    set((state) => {
+      // Generar ID único con prefijo para distinguirlo de UUIDs reales
+      const libreId = `libre_${crypto.randomUUID()}`;
+      const newItem: CartItem = {
+        productoId: libreId,
+        codigoInterno: "",
+        nombre,
+        precioVenta: precio,
+        precioCosto: null,
+        cantidad: 1,
+        subtotal: precio,
+        stockActual: 9999, // Sin límite de stock
+        esLibre: true,
+      };
       return { items: [...state.items, newItem] };
     });
   },
@@ -67,7 +88,8 @@ export const useCart = create<CartStore>((set, get) => ({
       return {
         items: state.items.map((i) => {
           if (i.productoId !== productoId) return i;
-          const cantidadFinal = Math.min(cantidad, i.stockActual);
+          // Ítems libres no tienen límite de stock
+          const cantidadFinal = i.esLibre ? cantidad : Math.min(cantidad, i.stockActual);
           return {
             ...i,
             cantidad: cantidadFinal,

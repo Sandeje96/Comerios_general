@@ -18,7 +18,7 @@ function formatCurrency(value: number): string {
 }
 
 export default function VentasPage() {
-  const { items, addItem, removeItem, updateCantidad, clearCart, total } = useCart();
+  const { items, addItem, addItemLibre, removeItem, updateCantidad, clearCart, total } = useCart();
 
   const [query, setQuery] = useState("");
   const [resultados, setResultados] = useState<ProductoSearchResult[]>([]);
@@ -26,6 +26,13 @@ export default function VentasPage() {
   const [error, setError] = useState<string | null>(null);
   const [comprobante, setComprobante] = useState<VentaResult | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  // ── Formulario de ítem libre ──
+  const [mostrarFormLibre, setMostrarFormLibre] = useState(false);
+  const [libreNombre, setLibreNombre] = useState("");
+  const [librePrecio, setLibrePrecio] = useState("");
+  const [libreCantidad, setLibreCantidad] = useState("1");
+  const [libreError, setLibreError] = useState<string | null>(null);
 
   // ── Búsqueda de productos ──
   const handleSearch = useCallback(async (value: string) => {
@@ -37,11 +44,34 @@ export default function VentasPage() {
     if (result.success) setResultados(result.data);
   }, []);
 
-  // ── Agregar al carrito ──
+  // ── Agregar al carrito (producto con stock) ──
   const handleSelectProducto = (producto: ProductoSearchResult) => {
     addItem(producto);
     setQuery("");
     setResultados([]);
+  };
+
+  // ── Agregar ítem libre ──
+  const handleAgregarLibre = () => {
+    setLibreError(null);
+    const nombre = libreNombre.trim();
+    const precio = parseFloat(librePrecio);
+    const cantidad = parseInt(libreCantidad, 10);
+
+    if (!nombre) { setLibreError("Ingresá una descripción del producto."); return; }
+    if (isNaN(precio) || precio <= 0) { setLibreError("El precio debe ser mayor a cero."); return; }
+    if (isNaN(cantidad) || cantidad < 1) { setLibreError("La cantidad debe ser al menos 1."); return; }
+
+    // Agregar tantas veces como la cantidad indicada (reutiliza addItemLibre)
+    for (let i = 0; i < cantidad; i++) {
+      addItemLibre(nombre, precio);
+    }
+
+    // Limpiar formulario
+    setLibreNombre("");
+    setLibrePrecio("");
+    setLibreCantidad("1");
+    setMostrarFormLibre(false);
   };
 
   // ── Confirmar venta ──
@@ -49,7 +79,19 @@ export default function VentasPage() {
     if (items.length === 0) return;
     setError(null);
     startTransition(async () => {
-      const payload = { items: items.map((i) => ({ productoId: i.productoId, cantidad: i.cantidad })) };
+      const itemsStock = items
+        .filter((i) => !i.esLibre)
+        .map((i) => ({ productoId: i.productoId, cantidad: i.cantidad }));
+
+      const itemsLibresPayload = items
+        .filter((i) => i.esLibre)
+        .map((i) => ({
+          nombre: i.nombre,
+          precioUnitario: i.precioVenta,
+          cantidad: i.cantidad,
+        }));
+
+      const payload = { items: itemsStock, itemsLibres: itemsLibresPayload };
       const result = await confirmarVentaAction(payload);
       if (result.success) {
         setComprobante(result.data);
@@ -129,12 +171,94 @@ export default function VentasPage() {
             </div>
           )}
 
+          {/* ── Botón / Formulario de Ítem Libre ── */}
+          {!mostrarFormLibre ? (
+            <button
+              id="btn-agregar-libre"
+              onClick={() => { setMostrarFormLibre(true); setQuery(""); setResultados([]); }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all text-sm font-medium w-full"
+            >
+              <span className="text-lg leading-none">＋</span>
+              Agregar producto sin stock (ingreso manual)
+            </button>
+          ) : (
+            <div className="bg-white rounded-xl border border-indigo-200 shadow-sm p-4 space-y-3">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm font-semibold text-indigo-700">Producto sin stock</p>
+                <button
+                  onClick={() => { setMostrarFormLibre(false); setLibreError(null); }}
+                  className="text-xs text-slate-400 hover:text-slate-600"
+                >
+                  Cancelar
+                </button>
+              </div>
+
+              <div>
+                <label className="text-xs text-slate-500 mb-1 block">Descripción del producto</label>
+                <Input
+                  id="libre-nombre"
+                  type="text"
+                  placeholder="Ej: Aceite girasol 1L"
+                  value={libreNombre}
+                  onChange={(e) => setLibreNombre(e.target.value)}
+                  className="h-10"
+                  autoFocus
+                  onKeyDown={(e) => e.key === "Enter" && document.getElementById("libre-precio")?.focus()}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-xs text-slate-500 mb-1 block">Precio unitario ($)</label>
+                  <Input
+                    id="libre-precio"
+                    type="number"
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                    value={librePrecio}
+                    onChange={(e) => setLibrePrecio(e.target.value)}
+                    className="h-10"
+                    onKeyDown={(e) => e.key === "Enter" && document.getElementById("libre-cantidad")?.focus()}
+                  />
+                </div>
+                <div className="w-24">
+                  <label className="text-xs text-slate-500 mb-1 block">Cantidad</label>
+                  <Input
+                    id="libre-cantidad"
+                    type="number"
+                    placeholder="1"
+                    min="1"
+                    max="9999"
+                    value={libreCantidad}
+                    onChange={(e) => setLibreCantidad(e.target.value)}
+                    className="h-10"
+                    onKeyDown={(e) => e.key === "Enter" && handleAgregarLibre()}
+                  />
+                </div>
+              </div>
+
+              {libreError && (
+                <p className="text-xs text-red-500">{libreError}</p>
+              )}
+
+              <Button
+                id="btn-confirmar-libre"
+                onClick={handleAgregarLibre}
+                className="w-full h-10 bg-indigo-600 hover:bg-indigo-700"
+              >
+                Agregar al carrito
+              </Button>
+            </div>
+          )}
+
           {/* Empty state */}
-          {query.length === 0 && items.length === 0 && (
+          {query.length === 0 && items.length === 0 && !mostrarFormLibre && (
             <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400">
               <div className="text-5xl mb-3">🔍</div>
               <p className="font-medium text-slate-500">Buscá un producto para comenzar</p>
               <p className="text-sm mt-1">Podés buscar por nombre, código interno o código de barras</p>
+              <p className="text-sm mt-1 text-slate-400">O usá el botón de abajo para agregar uno sin stock</p>
             </div>
           )}
         </div>
@@ -157,7 +281,14 @@ export default function VentasPage() {
                 {items.map((item: CartItem) => (
                   <div key={item.productoId} className="px-4 py-3 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">{item.nombre}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-medium text-slate-900 truncate">{item.nombre}</p>
+                        {item.esLibre && (
+                          <span className="shrink-0 text-[10px] font-semibold bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full">
+                            LIBRE
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-500">{formatCurrency(item.precioVenta)} c/u</p>
                     </div>
                     {/* Cantidad */}
@@ -169,7 +300,7 @@ export default function VentasPage() {
                       <span className="w-8 text-center text-sm font-semibold">{item.cantidad}</span>
                       <button
                         onClick={() => updateCantidad(item.productoId, item.cantidad + 1)}
-                        disabled={item.cantidad >= item.stockActual}
+                        disabled={!item.esLibre && item.cantidad >= item.stockActual}
                         className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 font-bold text-sm flex items-center justify-center transition-colors"
                       >+</button>
                     </div>

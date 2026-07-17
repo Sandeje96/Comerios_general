@@ -5,14 +5,15 @@
 // ─────────────────────────────────────────────
 
 export interface CartItem {
-  productoId: string;
+  productoId: string;      // UUID real del producto, o prefijo "libre_" + UUID para ítems libres
   codigoInterno: string;
   nombre: string;
   precioVenta: number;
   precioCosto: number | null;
   cantidad: number;
   subtotal: number;
-  stockActual: number; // Para validación client-side
+  stockActual: number;     // Para validación client-side (9999 para ítems libres)
+  esLibre?: boolean;       // true = ítem ingresado manualmente sin stock
 }
 
 // ─────────────────────────────────────────────
@@ -66,10 +67,18 @@ export interface ComprobanteItem {
 
 export interface VentaPayload {
   items: VentaItemPayload[];
+  itemsLibres?: ItemLibrePayload[];
 }
 
 export interface VentaItemPayload {
   productoId: string;
+  cantidad: number;
+}
+
+/** Ítem libre: producto sin stock en sistema, ingresado manualmente */
+export interface ItemLibrePayload {
+  nombre: string;
+  precioUnitario: number;
   cantidad: number;
 }
 

@@ -127,8 +127,9 @@ model VentaDetalle {
   comercio         Comercio  @relation(fields: [comercioId], references: [id])
   ventaId          String
   venta            Venta     @relation(fields: [ventaId], references: [id])
-  productoId       String
-  producto         Producto  @relation(fields: [productoId], references: [id])
+  productoId       String?   // null para ítems libres (sin stock)
+  producto         Producto? @relation(fields: [productoId], references: [id])
+  nombreLibre      String?   // descripción manual para ítems libres
   cantidad         Int
   precioUnitario   Decimal   @db.Decimal(10, 2) 
   precioCosto      Decimal?  @db.Decimal(10, 2) 

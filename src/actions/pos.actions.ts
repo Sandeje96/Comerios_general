@@ -47,7 +47,10 @@ export async function confirmarVentaAction(
       usuarioId: session.user.id,
       usuarioNombre: session.user.name ?? "Usuario",
       usuarioEmail: session.user.email ?? "",
-      payload: validated,
+      payload: {
+        items: validated.items,
+        itemsLibres: validated.itemsLibres,
+      },
     });
 
     return { success: true, data: result };
