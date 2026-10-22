@@ -32,6 +32,9 @@ export default async function DashboardLayout({
                 <Link href="/ventas" className="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                   Ventas
                 </Link>
+                <Link href="/historial" className="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                  Historial
+                </Link>
                 <Link href="/productos" className="px-3 py-2 rounded-md text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                   Productos
                 </Link>
@@ -63,6 +66,9 @@ export default async function DashboardLayout({
         <div className="sm:hidden border-t border-slate-100 bg-slate-50 flex overflow-x-auto p-2 gap-2">
           <Link href="/ventas" className="flex-1 text-center px-3 py-2 rounded-md text-xs font-medium text-slate-700 bg-white shadow-sm border border-slate-200">
             Ventas
+          </Link>
+          <Link href="/historial" className="flex-1 text-center px-3 py-2 rounded-md text-xs font-medium text-slate-700 bg-white shadow-sm border border-slate-200">
+            Historial
           </Link>
           <Link href="/productos" className="flex-1 text-center px-3 py-2 rounded-md text-xs font-medium text-slate-700 bg-white shadow-sm border border-slate-200">
             Productos
