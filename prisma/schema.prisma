@@ -26,6 +26,7 @@ model Comercio {
   ventas              Venta[]
   comprobantes        Comprobante[]
   ventaDetalles       VentaDetalle[]
+  gastos              Gasto[]
 }
 
 model Usuario {
@@ -42,6 +43,7 @@ model Usuario {
 
   ventasRealizadas      Venta[]
   movimientosRealizados MovimientoStock[]
+  gastosRegistrados     Gasto[]
 
   @@index([comercioId])
 }
@@ -153,4 +155,34 @@ model Comprobante {
 
   @@unique([comercioId, numeroComprobante])
   @@index([comercioId])
+}
+
+model Gasto {
+  id            String          @id @default(uuid())
+  comercioId    String
+  comercio      Comercio        @relation(fields: [comercioId], references: [id])
+  usuarioId     String?
+  usuario       Usuario?        @relation(fields: [usuarioId], references: [id])
+  categoria     CategoriaGasto  @default(OTROS)
+  descripcion   String
+  monto         Decimal         @db.Decimal(12, 2)
+  fecha         DateTime        @default(now())
+  metodoPago    String?         // Efectivo, Transferencia, Débito, etc.
+  comprobante   String?         // Nro de factura, boleta o referencia
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([comercioId])
+  @@index([comercioId, fecha])
+}
+
+enum CategoriaGasto {
+  PROVEEDORES
+  ALQUILER
+  SERVICIOS
+  INTERNET_TELEFONIA
+  SUELDOS
+  MANTENIMIENTO
+  IMPUESTOS
+  OTROS
 }

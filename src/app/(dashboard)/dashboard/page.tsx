@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Dashboard | Gestión Comercial",
 };
@@ -44,6 +46,9 @@ export default async function DashboardPage() {
         <div className="flex flex-wrap gap-3">
           <a href="/ventas" className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors px-5 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2">
             🛒 Nueva Venta
+          </a>
+          <a href="/gastos" className="bg-emerald-600 hover:bg-emerald-700 text-white transition-colors px-5 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2">
+            💸 Gastos y Balance
           </a>
           <a href="/productos" className="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 transition-colors px-5 py-2.5 rounded-lg shadow-sm font-medium flex items-center gap-2">
             📦 Catálogo
