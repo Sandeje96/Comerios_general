@@ -5,6 +5,7 @@ import { FileText } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { VentaHistorialItem } from "@/services/historial.service";
+import { formatDateAR, formatTimeAR, formatYMD_AR } from "@/lib/date-ar";
 
 interface HistorialPdfButtonProps {
   ventas: VentaHistorialItem[];
@@ -28,6 +29,7 @@ export function HistorialPdfButton({
 }: HistorialPdfButtonProps) {
   const exportarPDF = () => {
     const doc = new jsPDF();
+    const now = new Date();
 
     // Título
     doc.setFontSize(16);
@@ -39,7 +41,7 @@ export function HistorialPdfButton({
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100);
     doc.text(`Período: ${rangoTexto}`, 14, 27);
-    doc.text(`Fecha de emisión: ${new Date().toLocaleDateString("es-AR")} ${new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}`, 14, 33);
+    doc.text(`Fecha de emisión: ${formatDateAR(now)} ${formatTimeAR(now)} hs`, 14, 33);
 
     // Resumen en recuadro
     doc.setDrawColor(220, 220, 220);
@@ -79,7 +81,7 @@ export function HistorialPdfButton({
     });
 
     // Guardar archivo
-    const cleanFileName = `reporte-ventas-${new Date().toISOString().split("T")[0]}.pdf`;
+    const cleanFileName = `reporte-ventas-${formatYMD_AR(now)}.pdf`;
     doc.save(cleanFileName);
   };
 

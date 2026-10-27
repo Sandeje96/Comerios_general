@@ -165,6 +165,7 @@ export async function procesarVenta(
       comitente: { nombre: usuarioNombre, email: usuarioEmail },
       items: [...snapshotItemsStock, ...snapshotItemsLibres],
       total,
+      fecha: venta.createdAt,
     });
 
     // ── 8. Crear comprobante ──

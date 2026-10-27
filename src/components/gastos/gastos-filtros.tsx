@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +25,12 @@ export function GastosFiltros({
   const [modo, setModo] = useState<TipoFiltroGastos>(filtroActivo);
   const [desde, setDesde] = useState(desdeDefault);
   const [hasta, setHasta] = useState(hastaDefault);
+
+  useEffect(() => {
+    setModo(filtroActivo);
+    setDesde(desdeDefault);
+    setHasta(hastaDefault);
+  }, [filtroActivo, desdeDefault, hastaDefault]);
 
   const aplicarFiltroRapido = (nuevoFiltro: "mes" | "semana" | "hoy") => {
     setModo(nuevoFiltro);

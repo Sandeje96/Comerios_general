@@ -5,6 +5,7 @@ import { FileText } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { GastoItemResponse, DesgloseCategoria } from "@/services/gasto.service";
+import { formatDateAR, formatTimeAR, formatYMD_AR } from "@/lib/date-ar";
 
 interface GastosPdfButtonProps {
   gastos: GastoItemResponse[];
@@ -32,6 +33,7 @@ export function GastosPdfButton({
 }: GastosPdfButtonProps) {
   const exportarPDF = () => {
     const doc = new jsPDF();
+    const now = new Date();
 
     // Título
     doc.setFontSize(16);
@@ -44,7 +46,7 @@ export function GastosPdfButton({
     doc.setTextColor(100);
     doc.text(`Período: ${rangoTexto}`, 14, 27);
     doc.text(
-      `Fecha de emisión: ${new Date().toLocaleDateString("es-AR")} ${new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" })}`,
+      `Fecha de emisión: ${formatDateAR(now)} ${formatTimeAR(now)} hs`,
       14,
       33
     );
@@ -130,7 +132,7 @@ export function GastosPdfButton({
       },
     });
 
-    const cleanFileName = `reporte-gastos-${new Date().toISOString().split("T")[0]}.pdf`;
+    const cleanFileName = `reporte-gastos-${formatYMD_AR(now)}.pdf`;
     doc.save(cleanFileName);
   };
 

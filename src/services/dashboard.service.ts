@@ -1,13 +1,18 @@
 import prisma from "@/repositories/prisma";
-import { startOfDay, startOfWeek, startOfMonth, endOfDay } from "date-fns";
+import {
+  startOfDayAR,
+  endOfDayAR,
+  startOfWeekAR,
+  startOfMonthAR,
+} from "@/lib/date-ar";
 
 export async function getDashboardMetrics(comercioId: string) {
   const now = new Date();
-  
-  const inicioDia = startOfDay(now);
-  const finDia = endOfDay(now);
-  const inicioSemana = startOfWeek(now, { weekStartsOn: 1 }); // Lunes
-  const inicioMes = startOfMonth(now);
+
+  const inicioDia = startOfDayAR(now);
+  const finDia = endOfDayAR(now);
+  const inicioSemana = startOfWeekAR(now); // Lunes 00:00 hs Argentina
+  const inicioMes = startOfMonthAR(now);
 
   // 1. Ventas de Hoy
   const ventasHoyResult = await prisma.venta.aggregate({
@@ -30,6 +35,7 @@ export async function getDashboardMetrics(comercioId: string) {
       estado: "COMPLETADA",
       createdAt: {
         gte: inicioSemana,
+        lte: finDia,
       },
     },
     _sum: { total: true },
@@ -42,6 +48,7 @@ export async function getDashboardMetrics(comercioId: string) {
       estado: "COMPLETADA",
       createdAt: {
         gte: inicioMes,
+        lte: finDia,
       },
     },
     _sum: { total: true },

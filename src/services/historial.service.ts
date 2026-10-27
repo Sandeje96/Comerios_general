@@ -1,12 +1,18 @@
 import {
-  startOfDay,
-  endOfDay,
-  startOfWeek,
-  startOfMonth,
-  format,
-  isValid,
-} from "date-fns";
-import { es } from "date-fns/locale";
+  startOfDayAR,
+  endOfDayAR,
+  startOfWeekAR,
+  startOfMonthAR,
+  parseStartOfDayAR,
+  parseEndOfDayAR,
+  formatDateTimeAR,
+  formatTimeAR,
+  formatDateAR,
+  formatShortDateAR,
+  formatFechaLargaAR,
+  formatMesAnioAR,
+  formatYMD_AR,
+} from "@/lib/date-ar";
 import { getVentasHistorial } from "@/repositories/historial.repository";
 
 export type TipoFiltroHistorial = "hoy" | "semana" | "mes" | "custom";
@@ -60,7 +66,12 @@ export async function getHistorialData(
   const now = new Date();
 
   let filtro: TipoFiltroHistorial = "semana";
-  if (params.filtro === "hoy" || params.filtro === "semana" || params.filtro === "mes" || params.filtro === "custom") {
+  if (
+    params.filtro === "hoy" ||
+    params.filtro === "semana" ||
+    params.filtro === "mes" ||
+    params.filtro === "custom"
+  ) {
     filtro = params.filtro as TipoFiltroHistorial;
   } else if (params.desde || params.hasta) {
     filtro = "custom";
@@ -70,37 +81,37 @@ export async function getHistorialData(
   let hastaDate: Date;
 
   if (filtro === "hoy") {
-    desdeDate = startOfDay(now);
-    hastaDate = endOfDay(now);
+    desdeDate = startOfDayAR(now);
+    hastaDate = endOfDayAR(now);
   } else if (filtro === "mes") {
-    desdeDate = startOfMonth(now);
-    hastaDate = endOfDay(now);
+    desdeDate = startOfMonthAR(now);
+    hastaDate = endOfDayAR(now);
   } else if (filtro === "custom") {
     if (params.desde) {
-      const parsed = new Date(params.desde + "T00:00:00");
-      desdeDate = isValid(parsed) ? startOfDay(parsed) : startOfWeek(now, { weekStartsOn: 1 });
+      const parsed = parseStartOfDayAR(params.desde);
+      desdeDate = parsed ?? startOfWeekAR(now);
     } else {
-      desdeDate = startOfMonth(now);
+      desdeDate = startOfMonthAR(now);
     }
 
     if (params.hasta) {
-      const parsed = new Date(params.hasta + "T23:59:59.999");
-      hastaDate = isValid(parsed) ? endOfDay(parsed) : endOfDay(now);
+      const parsed = parseEndOfDayAR(params.hasta);
+      hastaDate = parsed ?? endOfDayAR(now);
     } else {
-      hastaDate = endOfDay(now);
+      hastaDate = endOfDayAR(now);
     }
   } else {
     // Default: 'semana'
     filtro = "semana";
-    desdeDate = startOfWeek(now, { weekStartsOn: 1 }); // Lunes
-    hastaDate = endOfDay(now);
+    desdeDate = startOfWeekAR(now); // Lunes 00:00 hs Argentina
+    hastaDate = endOfDayAR(now);
   }
 
   // Garantizar que desdeDate <= hastaDate
   if (desdeDate > hastaDate) {
     const temp = desdeDate;
-    desdeDate = startOfDay(hastaDate);
-    hastaDate = endOfDay(temp);
+    desdeDate = startOfDayAR(hastaDate);
+    hastaDate = endOfDayAR(temp);
   }
 
   const ventasDb = await getVentasHistorial({
@@ -136,8 +147,8 @@ export async function getHistorialData(
       id: venta.id,
       numeroComprobante: venta.comprobante?.numeroComprobante ?? null,
       fechaISO: venta.createdAt.toISOString(),
-      fechaLegible: format(venta.createdAt, "dd/MM/yyyy HH:mm", { locale: es }),
-      horaLegible: format(venta.createdAt, "HH:mm", { locale: es }),
+      fechaLegible: formatDateTimeAR(venta.createdAt),
+      horaLegible: formatTimeAR(venta.createdAt),
       cajero: venta.usuario?.nombre || venta.usuario?.email || "Cajero",
       total: monto,
       cantidadArticulos: cantidadArticulosEnVenta,
@@ -149,22 +160,22 @@ export async function getHistorialData(
   const cantidadVentas = ventas.length;
   const ticketPromedio = cantidadVentas > 0 ? totalRecaudado / cantidadVentas : 0;
 
-  // Etiqueta legible del rango
+  // Etiqueta legible del rango en horario de Argentina
   let rangoTexto = "";
   if (filtro === "hoy") {
-    rangoTexto = `Hoy (${format(desdeDate, "dd 'de' MMMM yyyy", { locale: es })})`;
+    rangoTexto = `Hoy (${formatFechaLargaAR(desdeDate)})`;
   } else if (filtro === "semana") {
-    rangoTexto = `Esta semana (${format(desdeDate, "dd/MM")} al ${format(hastaDate, "dd/MM/yyyy")})`;
+    rangoTexto = `Esta semana (${formatShortDateAR(desdeDate)} al ${formatDateAR(hastaDate)})`;
   } else if (filtro === "mes") {
-    rangoTexto = `Este mes (${format(desdeDate, "MMMM yyyy", { locale: es })})`;
+    rangoTexto = `Este mes (${formatMesAnioAR(desdeDate)})`;
   } else {
-    rangoTexto = `Del ${format(desdeDate, "dd/MM/yyyy")} al ${format(hastaDate, "dd/MM/yyyy")}`;
+    rangoTexto = `Del ${formatDateAR(desdeDate)} al ${formatDateAR(hastaDate)}`;
   }
 
   return {
     filtroActivo: filtro,
-    desdeStr: format(desdeDate, "yyyy-MM-dd"),
-    hastaStr: format(hastaDate, "yyyy-MM-dd"),
+    desdeStr: formatYMD_AR(desdeDate),
+    hastaStr: formatYMD_AR(hastaDate),
     rangoTexto,
     metricas: {
       totalRecaudado,

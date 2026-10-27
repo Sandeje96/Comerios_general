@@ -11,6 +11,7 @@ import {
   TipoCategoriaGasto,
 } from "@/validators/gasto.schema";
 import { createGastoAction } from "@/actions/gasto.actions";
+import { formatYMD_AR } from "@/lib/date-ar";
 import { PlusCircle, X, DollarSign, Tag, Calendar, CreditCard, FileText } from "lucide-react";
 
 export function NuevoGastoModal() {
@@ -18,7 +19,7 @@ export function NuevoGastoModal() {
   const [categoria, setCategoria] = useState<TipoCategoriaGasto>("PROVEEDORES");
   const [descripcion, setDescripcion] = useState("");
   const [monto, setMonto] = useState("");
-  const [fecha, setFecha] = useState(new Date().toISOString().split("T")[0]);
+  const [fecha, setFecha] = useState(() => formatYMD_AR());
   const [metodoPago, setMetodoPago] = useState<string>("Efectivo");
   const [comprobante, setComprobante] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +29,7 @@ export function NuevoGastoModal() {
     setCategoria("PROVEEDORES");
     setDescripcion("");
     setMonto("");
-    setFecha(new Date().toISOString().split("T")[0]);
+    setFecha(formatYMD_AR());
     setMetodoPago("Efectivo");
     setComprobante("");
     setError(null);

@@ -1,12 +1,17 @@
 import {
-  startOfDay,
-  endOfDay,
-  startOfWeek,
-  startOfMonth,
-  format,
-  isValid,
-} from "date-fns";
-import { es } from "date-fns/locale";
+  startOfDayAR,
+  endOfDayAR,
+  startOfWeekAR,
+  startOfMonthAR,
+  parseStartOfDayAR,
+  parseEndOfDayAR,
+  parseNoonAR,
+  formatDateAR,
+  formatShortDateAR,
+  formatFechaLargaAR,
+  formatMesAnioAR,
+  formatYMD_AR,
+} from "@/lib/date-ar";
 import {
   getGastosByRango,
   getVentasTotalByRango,
@@ -93,36 +98,36 @@ export async function getGastosDashboardData(
   let hastaDate: Date;
 
   if (filtro === "hoy") {
-    desdeDate = startOfDay(now);
-    hastaDate = endOfDay(now);
+    desdeDate = startOfDayAR(now);
+    hastaDate = endOfDayAR(now);
   } else if (filtro === "semana") {
-    desdeDate = startOfWeek(now, { weekStartsOn: 1 });
-    hastaDate = endOfDay(now);
+    desdeDate = startOfWeekAR(now);
+    hastaDate = endOfDayAR(now);
   } else if (filtro === "custom") {
     if (params.desde) {
-      const parsed = new Date(params.desde + "T00:00:00");
-      desdeDate = isValid(parsed) ? startOfDay(parsed) : startOfMonth(now);
+      const parsed = parseStartOfDayAR(params.desde);
+      desdeDate = parsed ?? startOfMonthAR(now);
     } else {
-      desdeDate = startOfMonth(now);
+      desdeDate = startOfMonthAR(now);
     }
 
     if (params.hasta) {
-      const parsed = new Date(params.hasta + "T23:59:59.999");
-      hastaDate = isValid(parsed) ? endOfDay(parsed) : endOfDay(now);
+      const parsed = parseEndOfDayAR(params.hasta);
+      hastaDate = parsed ?? endOfDayAR(now);
     } else {
-      hastaDate = endOfDay(now);
+      hastaDate = endOfDayAR(now);
     }
   } else {
     // Default para gastos: "mes"
     filtro = "mes";
-    desdeDate = startOfMonth(now);
-    hastaDate = endOfDay(now);
+    desdeDate = startOfMonthAR(now);
+    hastaDate = endOfDayAR(now);
   }
 
   if (desdeDate > hastaDate) {
     const temp = desdeDate;
-    desdeDate = startOfDay(hastaDate);
-    hastaDate = endOfDay(temp);
+    desdeDate = startOfDayAR(hastaDate);
+    hastaDate = endOfDayAR(temp);
   }
 
   // Traer gastos y ventas en paralelo
@@ -167,7 +172,7 @@ export async function getGastosDashboardData(
       descripcion: g.descripcion,
       monto,
       fechaISO: g.fecha.toISOString(),
-      fechaLegible: format(g.fecha, "dd/MM/yyyy", { locale: es }),
+      fechaLegible: formatDateAR(g.fecha),
       metodoPago: g.metodoPago,
       comprobante: g.comprobante,
       usuario: g.usuario?.nombre || g.usuario?.email || "Cajero",
@@ -201,22 +206,22 @@ export async function getGastosDashboardData(
       ? Math.round(((totalVentas - totalGastos) / totalVentas) * 1000) / 10
       : 0;
 
-  // Texto del rango
+  // Texto del rango en horario de Argentina
   let rangoTexto = "";
   if (filtro === "hoy") {
-    rangoTexto = `Hoy (${format(desdeDate, "dd 'de' MMMM yyyy", { locale: es })})`;
+    rangoTexto = `Hoy (${formatFechaLargaAR(desdeDate)})`;
   } else if (filtro === "semana") {
-    rangoTexto = `Esta semana (${format(desdeDate, "dd/MM")} al ${format(hastaDate, "dd/MM/yyyy")})`;
+    rangoTexto = `Esta semana (${formatShortDateAR(desdeDate)} al ${formatDateAR(hastaDate)})`;
   } else if (filtro === "mes") {
-    rangoTexto = `Este mes (${format(desdeDate, "MMMM yyyy", { locale: es })})`;
+    rangoTexto = `Este mes (${formatMesAnioAR(desdeDate)})`;
   } else {
-    rangoTexto = `Del ${format(desdeDate, "dd/MM/yyyy")} al ${format(hastaDate, "dd/MM/yyyy")}`;
+    rangoTexto = `Del ${formatDateAR(desdeDate)} al ${formatDateAR(hastaDate)}`;
   }
 
   return {
     filtroActivo: filtro,
-    desdeStr: format(desdeDate, "yyyy-MM-dd"),
-    hastaStr: format(hastaDate, "yyyy-MM-dd"),
+    desdeStr: formatYMD_AR(desdeDate),
+    hastaStr: formatYMD_AR(hastaDate),
     rangoTexto,
     metricas: {
       totalGastos,
@@ -238,8 +243,8 @@ export async function registrarGasto(
 ) {
   let fechaParsed: Date | undefined = undefined;
   if (input.fecha) {
-    const p = new Date(input.fecha + "T12:00:00");
-    if (isValid(p)) fechaParsed = p;
+    const p = parseNoonAR(input.fecha);
+    if (p) fechaParsed = p;
   }
 
   const params: CreateGastoParams = {

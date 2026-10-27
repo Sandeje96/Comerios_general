@@ -3,8 +3,7 @@ import { getDashboardMetrics } from "@/services/dashboard.service";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatUltimaVentaAR } from "@/lib/date-ar";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -112,7 +111,7 @@ export default async function DashboardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Hora</TableHead>
+                      <TableHead>Fecha y Hora</TableHead>
                       <TableHead>Cajero</TableHead>
                       <TableHead>Artículos</TableHead>
                       <TableHead className="text-right">Total</TableHead>
@@ -122,7 +121,7 @@ export default async function DashboardPage() {
                     {metrics.ultimasVentas.map((venta) => (
                       <TableRow key={venta.id}>
                         <TableCell className="font-medium text-slate-700">
-                          {format(new Date(venta.createdAt), "HH:mm", { locale: es })} hs
+                          {formatUltimaVentaAR(venta.createdAt)}
                         </TableCell>
                         <TableCell>{venta.usuario.nombre || "Usuario"}</TableCell>
                         <TableCell>

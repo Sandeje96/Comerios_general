@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { formatDateAR } from "@/lib/date-ar";
 
 interface ProductoParaExportar {
   codigoInterno: string;
@@ -19,9 +20,9 @@ export function ExportPdfButton({ productos }: { productos: ProductoParaExportar
     doc.setFontSize(18);
     doc.text("Reporte de Stock de Productos", 14, 22);
     
-    // Fecha
+    // Fecha en horario de Argentina
     doc.setFontSize(11);
-    doc.text(`Fecha: ${new Date().toLocaleDateString("es-AR")}`, 14, 30);
+    doc.text(`Fecha: ${formatDateAR(new Date())}`, 14, 30);
 
     // Tabla
     const tableColumn = ["Código Interno", "Nombre del Producto", "Stock Actual"];

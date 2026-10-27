@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,12 +20,17 @@ export function HistorialFiltros({
   hastaDefault,
 }: HistorialFiltrosProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const [modo, setModo] = useState<TipoFiltroHistorial>(filtroActivo);
   const [desde, setDesde] = useState(desdeDefault);
   const [hasta, setHasta] = useState(hastaDefault);
+
+  useEffect(() => {
+    setModo(filtroActivo);
+    setDesde(desdeDefault);
+    setHasta(hastaDefault);
+  }, [filtroActivo, desdeDefault, hastaDefault]);
 
   const aplicarFiltroRapido = (nuevoFiltro: "hoy" | "semana" | "mes") => {
     setModo(nuevoFiltro);
