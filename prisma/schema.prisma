@@ -27,6 +27,10 @@ model Comercio {
   comprobantes        Comprobante[]
   ventaDetalles       VentaDetalle[]
   gastos              Gasto[]
+  proveedores         Proveedor[]
+  cotizaciones        CotizacionProveedor[]
+  pagosProveedores    PagoProveedor[]
+  movimientosCC       MovimientoCuentaCorriente[]
 }
 
 model Usuario {
@@ -41,9 +45,12 @@ model Usuario {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  ventasRealizadas      Venta[]
-  movimientosRealizados MovimientoStock[]
-  gastosRegistrados     Gasto[]
+  ventasRealizadas         Venta[]
+  movimientosRealizados    MovimientoStock[]
+  gastosRegistrados        Gasto[]
+  cotizacionesRegistradas  CotizacionProveedor[]
+  pagosRegistrados         PagoProveedor[]
+  movimientosCCRegistrados MovimientoCuentaCorriente[]
 
   @@index([comercioId])
 }
@@ -186,3 +193,181 @@ enum CategoriaGasto {
   IMPUESTOS
   OTROS
 }
+
+model Proveedor {
+  id                  String    @id @default(uuid())
+  comercioId          String
+  comercio            Comercio  @relation(fields: [comercioId], references: [id])
+  nombre              String
+  cuit                String?
+  telefono            String?
+  email               String?
+  direccion           String?
+  observaciones       String?
+  activo              Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  cotizaciones        CotizacionProveedor[]
+  pagos               PagoProveedor[]
+  movimientos         MovimientoCuentaCorriente[]
+
+  @@index([comercioId])
+  @@index([comercioId, activo])
+}
+
+model CotizacionProveedor {
+  id                  String    @id @default(uuid())
+  comercioId          String
+  comercio            Comercio  @relation(fields: [comercioId], references: [id])
+  proveedorId         String
+  proveedor           Proveedor @relation(fields: [proveedorId], references: [id])
+  usuarioId           String?
+  usuario             Usuario?  @relation(fields: [usuarioId], references: [id])
+  numeroComprobante   String    // Número de cotización, factura o remito
+  fecha               DateTime  @default(now())
+  montoTotal          Decimal   @db.Decimal(12, 2)
+  montoPagado         Decimal   @db.Decimal(12, 2) @default(0)
+  estado              EstadoCotizacion @default(PENDIENTE)
+  observaciones       String?
+  archivoUrl          String?   @db.Text
+  archivoNombre       String?
+  anulado             Boolean   @default(false)
+  anuladoMotivo       String?
+  anuladoAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  movimiento          MovimientoCuentaCorriente?
+  pagosAsociados      PagoCotizacion[]
+
+  @@index([comercioId, proveedorId])
+  @@index([comercioId, fecha])
+}
+
+enum EstadoCotizacion {
+  PENDIENTE
+  PARCIAL
+  PAGADA
+  ANULADA
+}
+
+model PagoProveedor {
+  id                  String    @id @default(uuid())
+  comercioId          String
+  comercio            Comercio  @relation(fields: [comercioId], references: [id])
+  proveedorId         String
+  proveedor           Proveedor @relation(fields: [proveedorId], references: [id])
+  usuarioId           String?
+  usuario             Usuario?  @relation(fields: [usuarioId], references: [id])
+  fecha               DateTime  @default(now())
+  monto               Decimal   @db.Decimal(12, 2)
+  medioPago           MedioPagoProveedor @default(EFECTIVO)
+  referencia          String?
+  observaciones       String?
+
+  // Comprobante de pago propio (ej. transferencia bancaria)
+  comprobantePagoUrl    String?   @db.Text
+  comprobantePagoNombre String?
+
+  // Control independiente de recibo del proveedor
+  reciboRecibido      Boolean   @default(false)
+  reciboNumero        String?
+  reciboFecha         DateTime?
+  reciboArchivoUrl    String?   @db.Text
+  reciboArchivoNombre String?
+
+  // Datos específicos de medios de pago
+  transferenciaBanco      String?
+  transferenciaOperacion  String?
+  transferenciaFecha      DateTime?
+
+  chequeNumero        String?
+  chequeBanco         String?
+  chequeFechaEmision  DateTime?
+  chequeFechaCobro    DateTime?
+  chequeEstado        EstadoCheque?
+
+  estado              EstadoPagoProveedor @default(CONFIRMADO)
+  anuladoMotivo       String?
+  anuladoAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  movimiento          MovimientoCuentaCorriente?
+  cotizacionesAsociadas PagoCotizacion[]
+
+  @@index([comercioId, proveedorId])
+  @@index([comercioId, reciboRecibido])
+  @@index([comercioId, fecha])
+}
+
+enum MedioPagoProveedor {
+  EFECTIVO
+  TRANSFERENCIA
+  CHEQUE
+  DEBITO
+  CREDITO
+  OTRO
+}
+
+enum EstadoCheque {
+  PENDIENTE
+  ACREDITADO
+  RECHAZADO
+}
+
+enum EstadoPagoProveedor {
+  CONFIRMADO
+  ANULADO
+}
+
+model PagoCotizacion {
+  id                  String    @id @default(uuid())
+  pagoId              String
+  pago                PagoProveedor @relation(fields: [pagoId], references: [id], onDelete: Cascade)
+  cotizacionId        String
+  cotizacion          CotizacionProveedor @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+  montoAsignado       Decimal   @db.Decimal(12, 2)
+  createdAt           DateTime  @default(now())
+
+  @@index([pagoId])
+  @@index([cotizacionId])
+}
+
+model MovimientoCuentaCorriente {
+  id                  String    @id @default(uuid())
+  comercioId          String
+  comercio            Comercio  @relation(fields: [comercioId], references: [id])
+  proveedorId         String
+  proveedor           Proveedor @relation(fields: [proveedorId], references: [id])
+  usuarioId           String?
+  usuario             Usuario?  @relation(fields: [usuarioId], references: [id])
+  fecha               DateTime  @default(now())
+  tipo                TipoMovimientoCC
+  concepto            String
+  comprobante         String?
+  monto               Decimal   @db.Decimal(12, 2)
+  saldoResultante     Decimal?  @db.Decimal(12, 2)
+
+  cotizacionId        String?   @unique
+  cotizacion          CotizacionProveedor? @relation(fields: [cotizacionId], references: [id], onDelete: Cascade)
+
+  pagoId              String?   @unique
+  pago                PagoProveedor? @relation(fields: [pagoId], references: [id], onDelete: Cascade)
+
+  anulado             Boolean   @default(false)
+  anuladoMotivo       String?
+  anuladoAt           DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([comercioId, proveedorId])
+  @@index([comercioId, proveedorId, fecha])
+}
+
+enum TipoMovimientoCC {
+  DEBITO
+  CREDITO
+}
+
