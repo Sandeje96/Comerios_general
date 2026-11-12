@@ -9,6 +9,7 @@ import {
   registrarPago,
   toggleRecibo,
   anularMovimiento,
+  eliminarMovimiento,
   getCotizacionesPendientes,
 } from "@/services/proveedor.service";
 import {
@@ -172,3 +173,26 @@ export async function getCotizacionesPendientesAction(proveedorId: string) {
     };
   }
 }
+
+export async function deleteMovimientoAction(
+  movimientoId: string,
+  proveedorId?: string
+) {
+  try {
+    const session = await getSessionOrThrow();
+    await eliminarMovimiento(session.user.comercioId, movimientoId);
+
+    revalidatePath("/proveedores");
+    if (proveedorId) {
+      revalidatePath(`/proveedores/${proveedorId}`);
+    }
+    revalidatePath("/proveedores/recibos-pendientes");
+    return { success: true };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Error al eliminar el movimiento",
+    };
+  }
+}
+

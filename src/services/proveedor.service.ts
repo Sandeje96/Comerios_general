@@ -28,6 +28,7 @@ import {
   updateReciboEstado,
   getRecibosPendientesGlobal,
   anularMovimientoTransaccional,
+  eliminarMovimientoTransaccional,
 } from "@/repositories/proveedor.repository";
 import {
   ProveedorInput,
@@ -486,3 +487,14 @@ export async function getCotizacionesPendientes(
 ) {
   return await getCotizacionesPendientesByProveedor(comercioId, proveedorId);
 }
+
+export async function eliminarMovimiento(
+  comercioId: string,
+  movimientoId: string
+) {
+  return await eliminarMovimientoTransaccional({
+    comercioId,
+    movimientoId,
+  });
+}
+

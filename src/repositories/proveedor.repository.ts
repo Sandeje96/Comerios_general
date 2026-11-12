@@ -861,3 +861,98 @@ export async function anularMovimientoTransaccional(params: {
     return { success: true };
   });
 }
+
+export async function eliminarMovimientoTransaccional(params: {
+  comercioId: string;
+  movimientoId: string;
+}) {
+  return await prisma.$transaction(async (tx) => {
+    const mov = await tx.movimientoCuentaCorriente.findFirst({
+      where: {
+        id: params.movimientoId,
+        comercioId: params.comercioId,
+      },
+      include: {
+        cotizacion: {
+          include: {
+            pagosAsociados: true,
+          },
+        },
+        pago: {
+          include: {
+            cotizacionesAsociadas: true,
+          },
+        },
+      },
+    });
+
+    if (!mov) {
+      throw new Error("Movimiento no encontrado");
+    }
+
+    // 1. Si está vinculado a un Pago
+    if (mov.pagoId && mov.pago) {
+      // Revertir imputaciones en cotizaciones
+      for (const asoc of mov.pago.cotizacionesAsociadas) {
+        const cotDb = await tx.cotizacionProveedor.findUnique({
+          where: { id: asoc.cotizacionId },
+        });
+
+        if (cotDb) {
+          const montoRevertir = Number(asoc.montoAsignado);
+          const nuevoMontoPagado = Math.max(0, Number(cotDb.montoPagado) - montoRevertir);
+          const nuevoEstado = nuevoMontoPagado === 0 ? "PENDIENTE" : "PARCIAL";
+
+          await tx.cotizacionProveedor.update({
+            where: { id: cotDb.id },
+            data: {
+              montoPagado: nuevoMontoPagado,
+              estado: nuevoEstado,
+            },
+          });
+        }
+      }
+
+      // Eliminar asignaciones PagoCotizacion
+      await tx.pagoCotizacion.deleteMany({
+        where: { pagoId: mov.pagoId },
+      });
+
+      // Eliminar el movimiento
+      await tx.movimientoCuentaCorriente.delete({
+        where: { id: mov.id },
+      });
+
+      // Eliminar el pago
+      await tx.pagoProveedor.delete({
+        where: { id: mov.pagoId },
+      });
+    }
+    // 2. Si está vinculado a una Cotización
+    else if (mov.cotizacionId && mov.cotizacion) {
+      // Eliminar asignaciones de pago a esta cotización
+      await tx.pagoCotizacion.deleteMany({
+        where: { cotizacionId: mov.cotizacionId },
+      });
+
+      // Eliminar el movimiento
+      await tx.movimientoCuentaCorriente.delete({
+        where: { id: mov.id },
+      });
+
+      // Eliminar la cotización
+      await tx.cotizacionProveedor.delete({
+        where: { id: mov.cotizacionId },
+      });
+    }
+    // 3. Movimiento genérico
+    else {
+      await tx.movimientoCuentaCorriente.delete({
+        where: { id: mov.id },
+      });
+    }
+
+    return { success: true };
+  });
+}
+

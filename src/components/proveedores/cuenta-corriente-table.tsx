@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MovimientoCCItemResponse } from "@/services/proveedor.service";
 import { MarcarReciboModal } from "@/components/proveedores/marcar-recibo-modal";
 import { AnularMovimientoModal } from "@/components/proveedores/anular-movimiento-modal";
+import { EliminarMovimientoModal } from "@/components/proveedores/eliminar-movimiento-modal";
 import { Input } from "@/components/ui/input";
 import {
   Search,
@@ -364,6 +365,14 @@ export function CuentaCorrienteTable({
                               tipo={m.tipo}
                             />
                           )}
+                          <EliminarMovimientoModal
+                            movimientoId={m.id}
+                            proveedorId={proveedorId}
+                            concepto={m.concepto}
+                            fechaLegible={m.fechaLegible}
+                            monto={m.debito > 0 ? m.debito : m.credito}
+                            tipo={m.tipo}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -517,7 +526,28 @@ export function CuentaCorrienteTable({
                 <span>{movimientoSeleccionado.usuario}</span>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex justify-end">
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <EliminarMovimientoModal
+                  movimientoId={movimientoSeleccionado.id}
+                  proveedorId={proveedorId}
+                  concepto={movimientoSeleccionado.concepto}
+                  fechaLegible={movimientoSeleccionado.fechaLegible}
+                  monto={
+                    movimientoSeleccionado.debito > 0
+                      ? movimientoSeleccionado.debito
+                      : movimientoSeleccionado.credito
+                  }
+                  tipo={movimientoSeleccionado.tipo}
+                  trigger={
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold rounded-lg text-xs transition-colors flex items-center gap-1"
+                    >
+                      <span>Eliminar Operación</span>
+                    </button>
+                  }
+                  onSuccess={() => setMovimientoSeleccionado(null)}
+                />
                 <button
                   type="button"
                   onClick={() => setMovimientoSeleccionado(null)}
