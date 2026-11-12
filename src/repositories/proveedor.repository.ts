@@ -8,7 +8,233 @@ import {
 } from "@/validators/proveedor.schema";
 import { Prisma } from "@prisma/client";
 
+let tablasVerificadas = false;
+
+export async function ensureProveedorTables() {
+  if (tablasVerificadas) return;
+
+  try {
+    await prisma.$queryRawUnsafe('SELECT 1 FROM "Proveedor" LIMIT 1;');
+    tablasVerificadas = true;
+  } catch {
+    try {
+      console.log("Asegurando tablas de Cuenta Corriente de Proveedores en PostgreSQL...");
+      await prisma.$executeRawUnsafe(`
+        DO $$ BEGIN
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'EstadoCotizacion') THEN
+            CREATE TYPE "EstadoCotizacion" AS ENUM ('PENDIENTE', 'PARCIAL', 'PAGADA', 'ANULADA');
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'MedioPagoProveedor') THEN
+            CREATE TYPE "MedioPagoProveedor" AS ENUM ('EFECTIVO', 'TRANSFERENCIA', 'CHEQUE', 'DEBITO', 'CREDITO', 'OTRO');
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'EstadoCheque') THEN
+            CREATE TYPE "EstadoCheque" AS ENUM ('PENDIENTE', 'ACREDITADO', 'RECHAZADO');
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'EstadoPagoProveedor') THEN
+            CREATE TYPE "EstadoPagoProveedor" AS ENUM ('CONFIRMADO', 'ANULADO');
+          END IF;
+          IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'TipoMovimientoCC') THEN
+            CREATE TYPE "TipoMovimientoCC" AS ENUM ('DEBITO', 'CREDITO');
+          END IF;
+        END $$;
+
+        CREATE TABLE IF NOT EXISTS "Proveedor" (
+          "id" TEXT NOT NULL,
+          "comercioId" TEXT NOT NULL,
+          "nombre" TEXT NOT NULL,
+          "cuit" TEXT,
+          "telefono" TEXT,
+          "email" TEXT,
+          "direccion" TEXT,
+          "observaciones" TEXT,
+          "activo" BOOLEAN NOT NULL DEFAULT true,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "Proveedor_pkey" PRIMARY KEY ("id")
+        );
+
+        CREATE TABLE IF NOT EXISTS "CotizacionProveedor" (
+          "id" TEXT NOT NULL,
+          "comercioId" TEXT NOT NULL,
+          "proveedorId" TEXT NOT NULL,
+          "usuarioId" TEXT,
+          "numeroComprobante" TEXT NOT NULL,
+          "fecha" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "montoTotal" DECIMAL(12,2) NOT NULL,
+          "montoPagado" DECIMAL(12,2) NOT NULL DEFAULT 0,
+          "estado" "EstadoCotizacion" NOT NULL DEFAULT 'PENDIENTE',
+          "observaciones" TEXT,
+          "archivoUrl" TEXT,
+          "archivoNombre" TEXT,
+          "anulado" BOOLEAN NOT NULL DEFAULT false,
+          "anuladoMotivo" TEXT,
+          "anuladoAt" TIMESTAMP(3),
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "CotizacionProveedor_pkey" PRIMARY KEY ("id")
+        );
+
+        CREATE TABLE IF NOT EXISTS "PagoProveedor" (
+          "id" TEXT NOT NULL,
+          "comercioId" TEXT NOT NULL,
+          "proveedorId" TEXT NOT NULL,
+          "usuarioId" TEXT,
+          "fecha" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "monto" DECIMAL(12,2) NOT NULL,
+          "medioPago" "MedioPagoProveedor" NOT NULL DEFAULT 'EFECTIVO',
+          "referencia" TEXT,
+          "observaciones" TEXT,
+          "comprobantePagoUrl" TEXT,
+          "comprobantePagoNombre" TEXT,
+          "reciboRecibido" BOOLEAN NOT NULL DEFAULT false,
+          "reciboNumero" TEXT,
+          "reciboFecha" TIMESTAMP(3),
+          "reciboArchivoUrl" TEXT,
+          "reciboArchivoNombre" TEXT,
+          "transferenciaBanco" TEXT,
+          "transferenciaOperacion" TEXT,
+          "transferenciaFecha" TIMESTAMP(3),
+          "chequeNumero" TEXT,
+          "chequeBanco" TEXT,
+          "chequeFechaEmision" TIMESTAMP(3),
+          "chequeFechaCobro" TIMESTAMP(3),
+          "chequeEstado" "EstadoCheque",
+          "estado" "EstadoPagoProveedor" NOT NULL DEFAULT 'CONFIRMADO',
+          "anuladoMotivo" TEXT,
+          "anuladoAt" TIMESTAMP(3),
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "PagoProveedor_pkey" PRIMARY KEY ("id")
+        );
+
+        CREATE TABLE IF NOT EXISTS "PagoCotizacion" (
+          "id" TEXT NOT NULL,
+          "pagoId" TEXT NOT NULL,
+          "cotizacionId" TEXT NOT NULL,
+          "montoAsignado" DECIMAL(12,2) NOT NULL,
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "PagoCotizacion_pkey" PRIMARY KEY ("id")
+        );
+
+        CREATE TABLE IF NOT EXISTS "MovimientoCuentaCorriente" (
+          "id" TEXT NOT NULL,
+          "comercioId" TEXT NOT NULL,
+          "proveedorId" TEXT NOT NULL,
+          "usuarioId" TEXT,
+          "fecha" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "tipo" "TipoMovimientoCC" NOT NULL,
+          "concepto" TEXT NOT NULL,
+          "comprobante" TEXT,
+          "monto" DECIMAL(12,2) NOT NULL,
+          "saldoResultante" DECIMAL(12,2),
+          "cotizacionId" TEXT,
+          "pagoId" TEXT,
+          "anulado" BOOLEAN NOT NULL DEFAULT false,
+          "anuladoMotivo" TEXT,
+          "anuladoAt" TIMESTAMP(3),
+          "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "MovimientoCuentaCorriente_pkey" PRIMARY KEY ("id")
+        );
+
+        CREATE INDEX IF NOT EXISTS "Proveedor_comercioId_idx" ON "Proveedor"("comercioId");
+        CREATE INDEX IF NOT EXISTS "Proveedor_comercioId_activo_idx" ON "Proveedor"("comercioId", "activo");
+
+        CREATE INDEX IF NOT EXISTS "CotizacionProveedor_comercioId_proveedorId_idx" ON "CotizacionProveedor"("comercioId", "proveedorId");
+        CREATE INDEX IF NOT EXISTS "CotizacionProveedor_comercioId_fecha_idx" ON "CotizacionProveedor"("comercioId", "fecha");
+
+        CREATE INDEX IF NOT EXISTS "PagoProveedor_comercioId_proveedorId_idx" ON "PagoProveedor"("comercioId", "proveedorId");
+        CREATE INDEX IF NOT EXISTS "PagoProveedor_comercioId_reciboRecibido_idx" ON "PagoProveedor"("comercioId", "reciboRecibido");
+        CREATE INDEX IF NOT EXISTS "PagoProveedor_comercioId_fecha_idx" ON "PagoProveedor"("comercioId", "fecha");
+
+        CREATE INDEX IF NOT EXISTS "PagoCotizacion_pagoId_idx" ON "PagoCotizacion"("pagoId");
+        CREATE INDEX IF NOT EXISTS "PagoCotizacion_cotizacionId_idx" ON "PagoCotizacion"("cotizacionId");
+
+        CREATE UNIQUE INDEX IF NOT EXISTS "MovimientoCuentaCorriente_cotizacionId_key" ON "MovimientoCuentaCorriente"("cotizacionId");
+        CREATE UNIQUE INDEX IF NOT EXISTS "MovimientoCuentaCorriente_pagoId_key" ON "MovimientoCuentaCorriente"("pagoId");
+        CREATE INDEX IF NOT EXISTS "MovimientoCuentaCorriente_comercioId_proveedorId_idx" ON "MovimientoCuentaCorriente"("comercioId", "proveedorId");
+        CREATE INDEX IF NOT EXISTS "MovimientoCuentaCorriente_comercioId_proveedorId_fecha_idx" ON "MovimientoCuentaCorriente"("comercioId", "proveedorId", "fecha");
+
+        DO $$ BEGIN
+          ALTER TABLE "Proveedor" ADD CONSTRAINT "Proveedor_comercioId_fkey" FOREIGN KEY ("comercioId") REFERENCES "Comercio"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "CotizacionProveedor" ADD CONSTRAINT "CotizacionProveedor_comercioId_fkey" FOREIGN KEY ("comercioId") REFERENCES "Comercio"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "CotizacionProveedor" ADD CONSTRAINT "CotizacionProveedor_proveedorId_fkey" FOREIGN KEY ("proveedorId") REFERENCES "Proveedor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "CotizacionProveedor" ADD CONSTRAINT "CotizacionProveedor_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "PagoProveedor" ADD CONSTRAINT "PagoProveedor_comercioId_fkey" FOREIGN KEY ("comercioId") REFERENCES "Comercio"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "PagoProveedor" ADD CONSTRAINT "PagoProveedor_proveedorId_fkey" FOREIGN KEY ("proveedorId") REFERENCES "Proveedor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "PagoProveedor" ADD CONSTRAINT "PagoProveedor_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "PagoCotizacion" ADD CONSTRAINT "PagoCotizacion_pagoId_fkey" FOREIGN KEY ("pagoId") REFERENCES "PagoProveedor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "PagoCotizacion" ADD CONSTRAINT "PagoCotizacion_cotizacionId_fkey" FOREIGN KEY ("cotizacionId") REFERENCES "CotizacionProveedor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "MovimientoCuentaCorriente" ADD CONSTRAINT "MovimientoCuentaCorriente_comercioId_fkey" FOREIGN KEY ("comercioId") REFERENCES "Comercio"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "MovimientoCuentaCorriente" ADD CONSTRAINT "MovimientoCuentaCorriente_proveedorId_fkey" FOREIGN KEY ("proveedorId") REFERENCES "Proveedor"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "MovimientoCuentaCorriente" ADD CONSTRAINT "MovimientoCuentaCorriente_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "Usuario"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "MovimientoCuentaCorriente" ADD CONSTRAINT "MovimientoCuentaCorriente_cotizacionId_fkey" FOREIGN KEY ("cotizacionId") REFERENCES "CotizacionProveedor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+
+        DO $$ BEGIN
+          ALTER TABLE "MovimientoCuentaCorriente" ADD CONSTRAINT "MovimientoCuentaCorriente_pagoId_fkey" FOREIGN KEY ("pagoId") REFERENCES "PagoProveedor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+        EXCEPTION WHEN duplicate_object THEN null;
+        END $$;
+      `);
+      tablasVerificadas = true;
+      console.log("Tablas de Cuenta Corriente creadas exitosamente.");
+    } catch (createErr) {
+      console.error("Error al asegurar tablas de Cuenta Corriente:", createErr);
+    }
+  }
+}
+
 export async function getProveedoresWithSummary(comercioId: string) {
+  await ensureProveedorTables();
   const proveedores = await prisma.proveedor.findMany({
     where: {
       comercioId,
@@ -73,6 +299,7 @@ export async function getProveedoresWithSummary(comercioId: string) {
 }
 
 export async function getProveedorById(comercioId: string, id: string) {
+  await ensureProveedorTables();
   return await prisma.proveedor.findFirst({
     where: {
       id,
