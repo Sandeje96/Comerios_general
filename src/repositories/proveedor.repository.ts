@@ -21,6 +21,12 @@ export async function ensureProveedorTables() {
       console.log("Asegurando tablas de Cuenta Corriente de Proveedores en PostgreSQL...");
       await prisma.$executeRawUnsafe(`
         DO $$ BEGIN
+          IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '_prisma_migrations') THEN
+            DELETE FROM "_prisma_migrations" WHERE "finished_at" IS NULL;
+          END IF;
+        END $$;
+
+        DO $$ BEGIN
           IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'EstadoCotizacion') THEN
             CREATE TYPE "EstadoCotizacion" AS ENUM ('PENDIENTE', 'PARCIAL', 'PAGADA', 'ANULADA');
           END IF;
@@ -717,6 +723,7 @@ export async function getRecibosPendientesGlobal(
   comercioId: string,
   proveedorId?: string
 ) {
+  await ensureProveedorTables();
   const whereClause: Prisma.PagoProveedorWhereInput = {
     comercioId,
     reciboRecibido: false,
